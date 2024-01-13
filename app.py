@@ -42,9 +42,9 @@ os.environ['CLARIFAI_PAT'] = PAT
 st.set_page_config(layout="wide")
 st.title("EyeCue, the smart video creator for Career inspiration")
 
-IMAGE_FILE_LOCATION = './content/malte.png'
-with open(IMAGE_FILE_LOCATION, "rb") as f:
-    file_bytes = f.read()
+# IMAGE_FILE_LOCATION = './content/malte.png'
+# with open(IMAGE_FILE_LOCATION, "rb") as f:
+#     file_bytes = f.read()
 
 
 uploaded_file = st.file_uploader("Choose a file")
