@@ -29,6 +29,10 @@ The third version number (`Z` out of `X.Y.Z`) is used by this library for any in
 
 ## Getting started
 
+Create a .env file that contains the required tokens: 
+PAT = 'your clarifai token'
+ELEVENLABS_TOKEN = "a token for elevenlabs"
+
 After installation you just need to run the streamlit app:
 ```cmd
 streamlit run app.py
