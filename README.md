@@ -18,6 +18,8 @@ cd module-gallery
 pip install -r requirements.txt
 ```
 
+If the installation failed, it may be necessary to download futher build tools, like "Microsoft C++ Build Tools" (see error messages)
+
 ## Versioning
 
 This library doesn't use semantic versioning. The first two version numbers (`X.Y` out of `X.Y.Z`) follow the API (backend) versioning, and
@@ -33,6 +35,8 @@ streamlit run app.py
 ```
 
 Find your `user_id` [here](https://portal.clarifai.com/settings/profile), `app_id` (of whatever app you  want to interact with in your account), personal access token (`pat`) [here](https://portal.clarifai.com/settings/authentication), and the `base` URL for the API you're calling such as https://api-dev.clarifai.com or http://host:port for a direct Clarifai API stack.
+
+If these links don't work, go to the profile in clarify (round circle), security and click on eye icon to show the access token. Your user_id can be found in the section "Account"
 
 Put them into the following parts of the url below in your browser:
 http://localhost:8501?user_id={user_id}&app_id={app_id}&pat={pat}=base={base}
