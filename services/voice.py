@@ -5,7 +5,7 @@
 ######################################################################################################
 
 # Your PAT (Personal Access Token) can be found in the portal under Authentification
-PAT = '3c426c65b7d843859eaee7fe56dc8640'
+
 # Specify the correct user_id/app_id pairings
 # Since you're making inferences outside your app's scope
 USER_ID = 'eleven-labs'
