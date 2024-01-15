@@ -9,6 +9,7 @@ from clarifai.client.model import Model
 from clarifai.client.input import Inputs
 from services import voice
 from services import story as Story
+from services import llm
 from dotenv import load_dotenv
 import datetime
 
@@ -70,7 +71,6 @@ if "stories" not in st.session_state:
 
 with st.sidebar: 
 
-
   eleven_token = st.text_input("elevenlabs token", value=ELEVENLABS_TOKEN)
   #load all files in folder ./audio and display them as audio files to click and play
   d = os.path.dirname(__file__)
@@ -91,6 +91,7 @@ with st.sidebar:
       for image_path in story.getImagePaths():
         st.image(image_path)
 
+#------------------- The Repository in sidebar ------------------- #
   st.markdown("# MEDIA REPOSITORY")
   with st.expander("## Generated audio files"):
     counter = 0
@@ -106,7 +107,7 @@ with st.sidebar:
           os.remove(f)
           st.write("deleted")
 
-
+  # ------------------ Images in sidebar ------------------------ #
   #load all files in folder ./images and display them as images
   with st.expander("## Generated images"):
     counter = 0
@@ -120,64 +121,12 @@ with st.sidebar:
         os.remove(f)
         st.write("deleted")
 
-        
-    #st.write(f)
-    #st.write(name) 
-
-@st.cache_data
-def llm_multimodal(file_bytes,prompt):
-    model = "https://clarifai.com/openai/chat-completion/models/openai-gpt-4-vision"
-    inference_params = dict(temperature=0.2, max_tokens=100)
-
-    input = None
-    if file_bytes != None:
-      input = Inputs.get_multimodal_input(
-                input_id="", 
-                image_bytes = file_bytes if file_bytes != None else None, 
-                raw_text=prompt)
-    
-    else:
-      input = Inputs.get_text_input(input_id="",raw_text=prompt)
-
-    model_prediction = Model(model).predict(inputs = [input], inference_params=inference_params)
-    return model_prediction.outputs[0].data.text.raw
-
-
-@st.cache_data
-def generate_image (prompt, width=1024, height=1024): 
-  #prompt = "A cozy cabin in the woods surrounded by colorful autumn leaves"
-  # inference_params = dict(width= width, height= height, steps=50, cfg_scale = 8.0)
-
-  # # Model Predict
-  # model_prediction = Model("https://clarifai.com/stability-ai/stable-diffusion-2/models/stable-diffusion-xl").predict_by_bytes(prompt.encode(), input_type="text", inference_params=inference_params)
-  # output_base64 = model_prediction.outputs[0].data.image.base64
-
-  inference_params = dict(quality="standard", size= f'{width}x{height}')
-
-  # Model Predict
-  model_prediction = Model("https://clarifai.com/openai/dall-e/models/dall-e-3").predict_by_bytes(prompt.encode(), input_type="text", inference_params=inference_params)
-
-  output_base64 = model_prediction.outputs[0].data.image.base64
-  #st.write(model_prediction.outputs[0].data.image.image_info)
-
-  #add current date and time to filename
-  now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-  filename = f'./images/generated_image_{now}.png'
-  with open(filename, 'wb') as f:
-    f.write(output_base64)
-    st.image(filename, width=width, caption="Generated image")
-
-  return filename,prompt, width, height
-
-# IMAGE_FILE_LOCATION = './content/malte.png'
-# with open(IMAGE_FILE_LOCATION, "rb") as f:
-#     file_bytes = f.read()
-
+# ------------------ Story generation in main page  ------------------------ #
 job_role = st.text_input("Job Role")
 
 if job_role and st.button("Generate Story"):
     prompt = f"Make a 3 sentence emotional elevator pitch to a candidate in the style of Sir Attenborough, that the {job_role} is great and you are going to present some good jobs. Do not mention your name. Also make a prompt to generate a very appealing photography of an impressive person doing this job and name the role. Output both as a JSON with attributes story and impage_prompt."
-    text = llm_multimodal(None,prompt)
+    text = llm.llm_multimodal(None,prompt)
     #convert text to JSON
     parsed = json.loads(text)
     story_text = parsed["story"]
@@ -192,7 +141,7 @@ if job_role and st.button("Generate Story"):
       st.write("no audio generated, maybe no Eleven_labs token entered?")
     story.addAudio(audio_filepath,story_text)
 
-    filename, prompt, width, height = generate_image(parsed["image_prompt"])
+    filename, prompt, width, height = llm.generate_image(parsed["image_prompt"])
     story.addImage(filename, width, height, parsed["image_prompt"])
     stories = st.session_state["stories"]
     stories.addStory(story)
@@ -203,24 +152,20 @@ if job_role and st.button("Generate Story"):
 uploaded_file = st.file_uploader("Choose a file")
 
 
-
-
-
-
-
+# ------------------ Testing Image Curation ------------------------ #
 if uploaded_file is not None:
     # To read file as bytes:
     file_bytes = uploaded_file.getvalue()
     #st.write(file_bytes)
-    prompt = "Is there at least one person on this image? How positive on a scale from 1-10 will this image be perceived? Use JSON as an output format with attributes is_person and positivity_rating.s"
-    text = llm_multimodal(file_bytes, prompt)
+    prompt = "Is there at least one clear face of person on this image? Is it a photography? How positive on a scale from 1-10 will this image be perceived? Use JSON as an output format with attributes is_person, positivity_rating, is_photography"
+    text = llm.llm_multimodal(file_bytes, prompt)
     st.markdown(text)
 
 
 
-    ClarifaiStreamlitCSS.insert_default_css(st)
+ClarifaiStreamlitCSS.insert_default_css(st)
 
-    st.markdown("Please select a specific page by adding it to the url")
+#st.markdown("Please select a specific page by adding it to the url")
 
 
 
@@ -230,3 +175,4 @@ if uploaded_file is not None:
 # for fi, f in enumerate(glob.glob(os.path.join(d, "pages", "*.py"))):
 #   name = os.path.splitext(os.path.basename(f))[0]
 #   ClarifaiStreamlitCSS.buttonlink(cols[fi % len(cols)], name, "/" + name)
+
