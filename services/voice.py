@@ -23,11 +23,15 @@ RAW_TEXT = 'I love your product very much'
 # YOU DO NOT NEED TO CHANGE ANYTHING BELOW THIS LINE TO RUN THIS EXAMPLE
 ############################################################################
 
+import datetime
 from clarifai.client.model import Model
+import streamlit as st
 
-
+@st.cache_data
 def generate_audio (text,token):
     
+    if token == "":
+        return ""
 
     input = text
     api_key = token
@@ -39,7 +43,12 @@ def generate_audio (text,token):
     model_prediction = Model("https://clarifai.com/eleven-labs/audio-generation/models/speech-synthesis").predict_by_bytes(input.encode(), input_type="text", inference_params=inference_params)
 
     output_base64 = model_prediction.outputs[0].data.audio.base64
-
-    with open('audio_file3.wav', 'wb') as f:
+    #get current date and time and build unique filename from it
+    now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    filename = f'./audio/audio_file_{now}.wav'
+    with open(filename, 'wb') as f:
         f.write(output_base64)
+    return filename
+    
 
