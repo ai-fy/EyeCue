@@ -49,19 +49,22 @@ ELEVENLABS_TOKEN = os.environ['ELEVENLABS_TOKEN']
 
 os.environ['CLARIFAI_PAT'] = PAT
 
-def showStoryOnMainpage(current_story):
+def show_story_on_mainpage(current_story):
     
-    st.markdown(f"## Current Story: {current_story._role}")
-  #display generated images
-    for image_path in current_story.getImagePaths():
-      st.image(image_path)
+    area = st.session_state["story_area"]
+    with area.container():
+    
+      st.markdown(f"## Current Story: {current_story._role}")
+    #display generated images
+      for image_path in current_story.getImagePaths():
+        st.image(image_path)
 
-  #display generated audio
-    for audio_path in current_story.getAudioPaths():
-      if audio_path != "":
-        st.audio(audio_path) 
-      else:
-        st.write("no audio")
+    #display generated audio
+      for audio_path in current_story.getAudioPaths():
+        if audio_path != "":
+          st.audio(audio_path) 
+        else:
+          st.write("no audio")
 
 
 st.set_page_config(layout="wide")
@@ -96,7 +99,7 @@ with st.sidebar:
   for element in session_stories.getStories(): #<._stories["_stories"]:
     story = element["story"]
     with st.expander(story._role):
-      if st.button("edit", key="edit "+str(element["id"]),on_click=showStoryOnMainpage, args=(story,)): 
+      if st.button("edit", key="edit "+str(element["id"]),on_click=show_story_on_mainpage, args=(story,)): 
         st.write("editing")
         #set current story to session state to edit
         st.session_state["current_story"] = story
@@ -170,9 +173,15 @@ if job_role and st.button("Generate Story"):
     st.session_state["stories"] = stories
     st.session_state["current_story"] = story
     #st.experimental_rerun() #updating ui to reflect new story
-    showStoryOnMainpage(story)
+    show_story_on_mainpage(story)
 
 #------------------- The current story in main page ------------------- #
+
+if (not ("story_area" in st.session_state)):
+  st.write("creating story area")
+  placeholder = st.empty()
+  placeholder.text("EMPTY")
+  st.session_state["story_area"] = placeholder
 
 
 

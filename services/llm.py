@@ -4,6 +4,11 @@ from clarifai.client.model import Model
 from clarifai.client.input import Inputs
 from clarifai.client.model import Model
 
+
+vision_model = "https://clarifai.com/openai/chat-completion/models/openai-gpt-4-vision"
+image_model = "https://clarifai.com/openai/dall-e/models/dall-e-3"
+image_model2 = "https://clarifai.com/stability-ai/stable-diffusion-2/models/stable-diffusion-xl"
+
 # ------------------ Functions for Clarify interaction --------------------- #
 
 #-------------------------------------------#        
@@ -11,7 +16,7 @@ from clarifai.client.model import Model
 #-------------------------------------------#  
 @st.cache_data
 def llm_multimodal(file_bytes,prompt):
-    model = "https://clarifai.com/openai/chat-completion/models/openai-gpt-4-vision"
+   
     inference_params = dict(temperature=0.2, max_tokens=100)
 
     input = None
@@ -24,7 +29,7 @@ def llm_multimodal(file_bytes,prompt):
     else:
       input = Inputs.get_text_input(input_id="",raw_text=prompt)
 
-    model_prediction = Model(model).predict(inputs = [input], inference_params=inference_params)
+    model_prediction = Model(vision_model).predict(inputs = [input], inference_params=inference_params)
     return model_prediction.outputs[0].data.text.raw
 
 
@@ -34,19 +39,9 @@ def llm_multimodal(file_bytes,prompt):
 
 @st.cache_data
 def generate_image (prompt, width=1024, height=1024): 
-  #prompt = "A cozy cabin in the woods surrounded by colorful autumn leaves"
-  # inference_params = dict(width= width, height= height, steps=50, cfg_scale = 8.0)
-
-  # # Model Predict
-  # model_prediction = Model("https://clarifai.com/stability-ai/stable-diffusion-2/models/stable-diffusion-xl").predict_by_bytes(prompt.encode(), input_type="text", inference_params=inference_params)
-  # output_base64 = model_prediction.outputs[0].data.image.base64
 
   inference_params = dict(quality="standard", size= f'{width}x{height}')
-
-  # Model Predict
-  model = "https://clarifai.com/openai/dall-e/models/dall-e-3"
-  model_prediction = Model(model).predict_by_bytes(prompt.encode(), input_type="text", inference_params=inference_params)
-
+  model_prediction = Model(image_model).predict_by_bytes(prompt.encode(), input_type="text", inference_params=inference_params)
   output_base64 = model_prediction.outputs[0].data.image.base64
   #st.write(model_prediction.outputs[0].data.image.image_info)
 
@@ -55,6 +50,5 @@ def generate_image (prompt, width=1024, height=1024):
   filename = f'./images/generated_image_{now}.png'
   with open(filename, 'wb') as f:
     f.write(output_base64)
-    #st.image(filename, width=width, caption="Generated image")
 
   return filename,prompt, width, height
