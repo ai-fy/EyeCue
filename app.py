@@ -12,6 +12,7 @@ from services import story as Story
 from services import llm
 from dotenv import load_dotenv
 import datetime
+import yaml
 
 load_dotenv()
 
@@ -146,7 +147,40 @@ with st.sidebar:
         st.write("deleted")
 
 # ------------------ Story generation in main page  ------------------------ #
-job_role = st.text_input("Job Role")
+job_role = st.text_input("Job Role",key="job_role")
+company = st.text_input("Company",value="Gymondo")
+max_number_of_scenes = st.number_input("Max number of scenes", min_value=1, max_value=10, value=3)
+
+if job_role and st.button("Generate Storyboard"):
+  storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Describe each of maximally {max_number_of_scenes} scene. For each scene describe the following, - desciption: Describe the scene shortly - visualprompt: Generate a prompt for the scene for an image generator, describing persons, clothes, light, perspective in this prompt. Prefer showing happy people. - voiceover: the text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data.")
+
+  #st.write(storyboard)
+  #st.write(str(type(storyboard)))
+
+  try:
+    parsed_storyboard = json.loads(storyboard)
+    
+    scene_counter = 0
+    for scene in parsed_storyboard["scenes"]:
+      scene_counter = scene_counter + 1
+      
+      st.write(f"## Scene {scene_counter}")
+      st.markdown(f"{scene['description']}")
+      
+      st.write("### Visual")
+      st.markdown(f"{scene['visualprompt']}")
+      filename, prompt, width, height = llm.generate_image(scene["visualprompt"])
+      st.image(filename)
+      
+      st.markdown("### Voice")  
+      st.markdown(f"{scene['voiceover']}")
+      filepath = voice.generate_audio(scene["voiceover"],eleven_token)
+      st.audio(filepath)
+
+  except Exception as e:
+    st.write("not parsed storyboard")
+    st.write(e)
+
 
 if job_role and st.button("Generate Story"):
     prompt = f"Make a 3 sentence emotional elevator pitch to a candidate in the style of Sir Attenborough, that the {job_role} is great and you are going to present some good jobs. Do not mention your name. Also make a prompt to generate a very appealing photography of an impressive person doing this job and name the role. Output both as a JSON with attributes story and impage_prompt."
@@ -184,12 +218,8 @@ if (not ("story_area" in st.session_state)):
   st.session_state["story_area"] = placeholder
 
 
-
-
-uploaded_file = st.file_uploader("Choose a file")
-
-
 # ------------------ Testing Image Curation ------------------------ #
+uploaded_file = st.file_uploader("Choose a file")
 if uploaded_file is not None:
     # To read file as bytes:
     file_bytes = uploaded_file.getvalue()
