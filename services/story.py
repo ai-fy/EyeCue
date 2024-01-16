@@ -7,6 +7,11 @@ import jsonpickle
 
 class stories: 
 
+    def getStories(self):
+        return self._stories["_stories"]
+    
+    def getStoryAmount(self):
+        return len(self._stories["_stories"])
 
     def incrementLastId(self):
         self._stories["lastId"] = self._stories["lastId"] + 1

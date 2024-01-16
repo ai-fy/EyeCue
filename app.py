@@ -49,12 +49,28 @@ ELEVENLABS_TOKEN = os.environ['ELEVENLABS_TOKEN']
 
 os.environ['CLARIFAI_PAT'] = PAT
 
+def showStoryOnMainpage(current_story):
+    
+    st.markdown(f"## Current Story: {current_story._role}")
+  #display generated images
+    for image_path in current_story.getImagePaths():
+      st.image(image_path)
+
+  #display generated audio
+    for audio_path in current_story.getAudioPaths():
+      if audio_path != "":
+        st.audio(audio_path) 
+      else:
+        st.write("no audio")
+
+
 st.set_page_config(layout="wide")
 st.title("EyeCue")
 st.markdown("## the smart video creator for Career inspiration")
 eleven_token = ""
 stories = Story.stories()
 
+#------------- load stories from filesystem ------------------- #
 #check if stories exist in session state, if not create
 if "stories" not in st.session_state:
   if stories.isSaved():
@@ -75,11 +91,16 @@ with st.sidebar:
   #load all files in folder ./audio and display them as audio files to click and play
   d = os.path.dirname(__file__)
 
-  st.markdown(f"## Generated Stories ("+str(st.session_state["stories"]._stories["lastId"])+")")
+  st.markdown(f"## Generated Stories ("+str(st.session_state.stories.getStoryAmount())+")")
   session_stories = st.session_state["stories"]
-  for element in session_stories._stories["_stories"]:
+  for element in session_stories.getStories(): #<._stories["_stories"]:
     story = element["story"]
     with st.expander(story._role):
+      if st.button("edit", key="edit "+str(element["id"]),on_click=showStoryOnMainpage, args=(story,)): 
+        st.write("editing")
+        #set current story to session state to edit
+        st.session_state["current_story"] = story
+        
 
       for audio_path in story.getAudioPaths():
         if audio_path != "":
@@ -147,8 +168,15 @@ if job_role and st.button("Generate Story"):
     stories.addStory(story)
     stories.save()
     st.session_state["stories"] = stories
-    st.experimental_rerun() #updating ui to reflect new story
-    
+    st.session_state["current_story"] = story
+    #st.experimental_rerun() #updating ui to reflect new story
+    showStoryOnMainpage(story)
+
+#------------------- The current story in main page ------------------- #
+
+
+
+
 uploaded_file = st.file_uploader("Choose a file")
 
 

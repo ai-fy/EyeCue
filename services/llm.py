@@ -55,6 +55,6 @@ def generate_image (prompt, width=1024, height=1024):
   filename = f'./images/generated_image_{now}.png'
   with open(filename, 'wb') as f:
     f.write(output_base64)
-    st.image(filename, width=width, caption="Generated image")
+    #st.image(filename, width=width, caption="Generated image")
 
   return filename,prompt, width, height
