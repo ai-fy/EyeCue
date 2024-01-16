@@ -174,8 +174,11 @@ if job_role and st.button("Generate Storyboard"):
       
       st.markdown("### Voice")  
       st.markdown(f"{scene['voiceover']}")
-      filepath = voice.generate_audio(scene["voiceover"],eleven_token)
-      st.audio(filepath)
+      if eleven_token != "":
+        filepath = voice.generate_audio(scene["voiceover"],eleven_token)
+        st.audio(filepath)
+      else:
+        st.write("no token, no audio")
 
   except Exception as e:
     st.write("not parsed storyboard")
