@@ -35,12 +35,19 @@ def generate_audio (text,token):
 
     input = text
     api_key = token
+    use_elevenlabs = False
+    if use_elevenlabs:
 
-    inference_params = dict( model_id="eleven_multilingual_v2", stability= 0.5, similarity_boost= 0.5, style=0,use_speaker_boost=True, api_key = api_key)
-    inference_params['voice-id']="mKSoejsrVfEDyafPAHdx"
+        inference_params = dict( model_id="eleven_multilingual_v2", stability= 0.5, similarity_boost= 0.5, style=0,use_speaker_boost=True, api_key = api_key)
+        inference_params['voice-id']="mKSoejsrVfEDyafPAHdx"
 
-    # Model Predict
-    model_prediction = Model("https://clarifai.com/eleven-labs/audio-generation/models/speech-synthesis").predict_by_bytes(input.encode(), input_type="text", inference_params=inference_params)
+        # Model Predict
+        model_prediction = Model("https://clarifai.com/eleven-labs/audio-generation/models/speech-synthesis").predict_by_bytes(input.encode(), input_type="text", inference_params=inference_params)
+
+    else: 
+        inference_params = dict(voice="alloy", speed=1.0)
+        # Model Predict
+        model_prediction = Model("https://clarifai.com/openai/tts/models/openai-tts-1").predict_by_bytes(input.encode(), input_type="text", inference_params=inference_params)
 
     output_base64 = model_prediction.outputs[0].data.audio.base64
     #get current date and time and build unique filename from it

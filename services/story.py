@@ -69,6 +69,9 @@ class story:
         for image in self._generated["images"]:
             image_paths.append(image["image"])
         return image_paths
+    
+    def getRoleText(self):
+        return self._role
 
     def addImage(self, image_path, width, height, caption="", used_prompt=""):
         self._generated["images"].append(
@@ -97,14 +100,46 @@ class story:
     def addImagePrompt(self, text):
         self._generated["image_prompt"] = text    
 
-    def addScene(self, text,image,audio):
+    def getScene(self,scene_id):
+        #get scene by id from self._scenes
+        for scene in self._scenes:
+            if scene["number"] == scene_id:
+                return scene    
+        
+    def getSceneDescription(self,scene_id):
+        scene = self.getScene(scene_id)
+        return scene["text"]
+
+    def getVisualPrompt(self,scene_id):
+        scene = self.getScene(scene_id)
+        return scene["image_prompt"]
+    
+    def getAudioPrompt(self,scene_id):
+        scene = self.getScene(scene_id)
+        return scene["audio_prompt"]
+    
+    def getSceneImage(self,scene_id):
+        scene = self.getScene(scene_id)
+        return scene["image"]
+    
+    def getSceneAudio(self,scene_id):
+        scene = self.getScene(scene_id)
+        return scene["audio"]
+
+    def addScene(self, text,image_prompt, image,audio_prompt, audio, number):
         self._scenes.append(
             {
                 "text": text, 
+                "image_prompt": image_prompt,
                 "image": image, 
-                "audio": audio
+                "audio_prompt": audio_prompt,
+                "audio": audio,
+                "number": number
             }
             )   
+        
+    def getScenes(self):
+        return self._scenes
 
     def __init__(self):
         return
@@ -115,7 +150,7 @@ class story:
             "image_prompt": "",
             "images": [],
             "audios": [],
-            "videos": [],
+            "videos": []
         }
            # scenes used to generate the story-video, with images, text and audio to be used.
         self._scenes = []
