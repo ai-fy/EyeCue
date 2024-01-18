@@ -299,17 +299,17 @@ with home:
   #     text = llm.llm_multimodal(file_bytes, prompt)
   #     st.markdown(text)
 
-print("calling st.empty")
-placeholder = st.empty()
-with placeholder.container():
-  st.markdown("## Current Story")
+  print("calling st.empty")
+  placeholder = st.empty()
+  with placeholder.container():
+    st.markdown("## Current Story")
 
-st.session_state["story_area2"] = placeholder
+  st.session_state["story_area2"] = placeholder
 
-if "current_story" in st.session_state:
- 
-   print("showing story from session.")
-   show_all_scenes(st.session_state["current_story"])
+  if "current_story" in st.session_state:
+  
+    print("showing story from session.")
+    show_all_scenes(st.session_state["current_story"])
 
 ClarifaiStreamlitCSS.insert_default_css(st)
 
