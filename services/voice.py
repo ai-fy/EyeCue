@@ -45,7 +45,7 @@ def generate_audio (text,token):
         model_prediction = Model("https://clarifai.com/eleven-labs/audio-generation/models/speech-synthesis").predict_by_bytes(input.encode(), input_type="text", inference_params=inference_params)
 
     else: 
-        inference_params = dict(voice="onyx", speed=1.0)
+        inference_params = dict(voice="shimmer", speed=1.0)
         # Model Predict
         model_prediction = Model("https://clarifai.com/openai/tts/models/openai-tts-1").predict_by_bytes(input.encode(), input_type="text", inference_params=inference_params)
 

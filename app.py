@@ -8,12 +8,14 @@ from clarifai.modules.css import ClarifaiStreamlitCSS
 from clarifai.client.model import Model
 from clarifai.client.input import Inputs
 from services import voice
+from services import video
 from services import story as Story
 from services import llm
 from dotenv import load_dotenv
 import datetime
 import yaml
 import pages.research_agend as research_agend
+
 
 
 load_dotenv()
@@ -146,10 +148,23 @@ with st.sidebar:
     scenes = story.getScenes()
     #print(scenes)
     with st.expander(story.getRoleText()):
+
+      if story.hasVideo() != True:
+        if st.button("video", key="video"+str(element["id"])):
+          vid = video.Video()
+          vid.create_video(story)
+          st.write("video created")
+          session_stories.save()
+      
+
       if st.button("edit", key="edit"+str(element["id"]),on_click=show_all_scenes, args=[story]): #, key="edit "+str(element["id"])):
         st.write("editing")
         #set current story to session state to edit
         st.session_state["current_story"] = story
+
+      if story.hasVideo():
+        st.markdown("### Video")
+        st.video(f"{story.getVideo()}")
         
       # iterate all scenes in story
       for scene in story.getScenes():
@@ -218,7 +233,7 @@ with home:
 
   with st.form(key="story_form"):
     job_role = st.text_input("Job Role",key="job_role")
-    company = st.text_input("Company",value="Gymondo")
+    company = st.text_input("Company",value="LabLab.ai")
     max_number_of_scenes = st.number_input("Max number of scenes", min_value=1, max_value=10, value=3)
 
     

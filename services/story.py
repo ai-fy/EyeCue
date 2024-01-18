@@ -103,7 +103,7 @@ class story:
     def getScene(self,scene_id):
         #get scene by id from self._scenes
         for scene in self._scenes:
-            if scene["number"] == scene_id:
+            if scene["id"] == scene_id:
                 return scene    
         
     def getSceneDescription(self,scene_id):
@@ -126,7 +126,7 @@ class story:
         scene = self.getScene(scene_id)
         return scene["audio"]
 
-    def addScene(self, text,image_prompt, image,audio_prompt, audio, number):
+    def addScene(self, text,image_prompt, image,audio_prompt, audio, id):
         self._scenes.append(
             {
                 "text": text, 
@@ -134,12 +134,69 @@ class story:
                 "image": image, 
                 "audio_prompt": audio_prompt,
                 "audio": audio,
-                "number": number
+                "id": id
             }
             )   
         
+    def addVideo(self, video_path):
+        self._generated["video"] = video_path
+
+    def getVideo(self):
+        return self._generated["video"]    
+
+    def hasVideo(self):
+        return self._generated.get("video","") != ""
+
     def getScenes(self):
         return self._scenes
+    
+    
+    def toVideo(self):
+
+        text = "CFO at LabLab, the place to be for AI"
+        text2= "LabLab.ai"
+        video_template = """
+{
+  "id": "q6kbimx5",
+  "type": "component",
+  "component": "basic/000",
+  "settings": {
+    "headline": {
+      "text": [
+        "{text}}"
+      ],
+      "color": "white",
+      "font-family": "EB Garamond",
+      "text-align": "center",
+      "font-size": "8vw",
+      "padding": "3vw 0"
+    },
+    "body": {
+      "color": "white",
+      "text": [
+        "{text2}"
+      ],
+      "text-align": "center",
+      "font-family": "EB Garamond",
+      "font-size": "5vw"
+    },
+    "card": {
+      "vertical-align": "bottom",
+      "margin": "5vw",
+      "background-color": "rgba(0,100,150,0.5)",
+      "border-radius": "2vw"
+    }
+  },
+  "width": 1080,
+  "height": 1800,
+  "x": 0,
+  "y": 0,
+  "duration": 10,
+  "comment": "Simple card",
+  "position": "custom"
+}
+        """
+        return ""
 
     def __init__(self):
         return
