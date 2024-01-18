@@ -238,9 +238,13 @@ with home:
 
     
     if st.form_submit_button("Generate Storyboard"):
-      storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Describe each of {max_number_of_scenes} scene. For each scene find very attention catching hooks and generate the following, - desciption: Describe the scene shortly with a great hook - visualprompt: Generate a prompt for the scene for an image generator, describing very positive energetic persons, clothes, light, perspective in this prompt. Do not include Text or logos. Prefer showing happy people. - voiceover: the very short and compelling one sentence text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data, that contains a scenes array with the scenes at the top level.")
+      storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Describe each of {max_number_of_scenes} scene. For each scene find very attention catching hooks and generate the following, - desciption: Describe the scene shortly with a great hook - visualprompt: Generate a prompt for the scene for an image generator, describing very positive energetic persons, clothes, light, perspective in this prompt. Do not include Text or logos. Prefer showing happy people. Generate a portrait orientation in 9:16 format - voiceover: the very short and compelling one sentence text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data, that contains a scenes array with the scenes at the top level.")
       print(storyboard)
+      
+      storyboard = storyboard.replace("```json","")
+      storyboard = storyboard.replace("```","")
       storyboard = storyboard.replace("json","") #remove javascript object notation from string, if LLM is not compliant
+      
       #st.write(storyboard)
       #st.write(str(type(storyboard)))
       #------------------- The current story in main page ------------------- #
