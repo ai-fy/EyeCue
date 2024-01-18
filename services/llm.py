@@ -38,8 +38,8 @@ def llm_multimodal(file_bytes,prompt):
 #-------------------------------------------#
 
 @st.cache_data
-def generate_image (prompt, width=1024, height=1024): 
-
+def generate_image (prompt, width=1024, height=1792): 
+    
   inference_params = dict(quality="standard", size= f'{width}x{height}')
   model_prediction = Model(image_model).predict_by_bytes(prompt.encode(), input_type="text", inference_params=inference_params)
   output_base64 = model_prediction.outputs[0].data.image.base64
