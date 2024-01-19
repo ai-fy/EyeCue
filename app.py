@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 import datetime
 import yaml
 import pages.research_agend as research_agend
-
+import random
 
 
 load_dotenv()
@@ -66,6 +66,12 @@ def show_all_scenes(_story):
       column_count = 3
       if _story.hasVideo() == True:
         column_count = column_count + 1
+      else:
+         if st.button("video", key="video_in_editor"+str(random.randint(0,1000))):
+          vid = video.Video()
+          vid.create_video(_story)
+          st.write("video created")
+          session_stories.save()
 
       columns = st.columns(column_count)
       scene_counter = 0
