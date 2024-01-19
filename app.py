@@ -61,13 +61,29 @@ def show_all_scenes(_story):
     container_to_show_in = st.session_state["story_area2"]
     container_to_show_in = container_to_show_in.container()
     with container_to_show_in:
-      columns = st.columns(3)
+      
+
+      column_count = 3
+      if _story.hasVideo() == True:
+        column_count = column_count + 1
+
+      columns = st.columns(column_count)
       scene_counter = 0
+      col_counter = 0
       scenes = _story.getScenes()
+      
+      if _story.hasVideo() == True:
+        with columns[col_counter]:
+          st.write("## Generated Video")
+          vid = _story.getVideo()
+          st.video(vid)
+          col_counter = col_counter + 1
+      
       for scene in scenes:
-        with columns[scene_counter % len(columns)]:
+        with columns[col_counter % len(columns)]:
           scene_counter = scene_counter + 1
-        
+          col_counter = col_counter + 1
+          
           st.write(f"## Scene {scene_counter}")
           desc = _story.getSceneDescription(scene_counter)
           st.markdown(f"{desc}")
