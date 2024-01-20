@@ -1,22 +1,27 @@
 import streamlit as st
 from metaphor_python import Metaphor
+from services import llm
 
 # Initialize the Metaphor API client at the global level
 metaphor = Metaphor("f4ca1ab6-2d62-475c-850f-9bbcdb7d281c")
 
 def run_metaphor_search(company_name):
     prompt = f"positive reviews about employees working at {company_name}"
-    response = metaphor.search(prompt, num_results=3, include_domains=["comparably.com"], type="keyword")
+    response = metaphor.search(prompt, num_results=3, include_domains=["glassdoor.com"], type="keyword")
     st.write(f"received {len(response.results)} entries")
 
     contents = []
     for result in response.results:
-        st.write("now checking for: "+str(result.id))
+        st.write(f"now checking for: {result.title} at {result.url}")
         content = metaphor.get_contents(result.id)
         content = content.contents
-        contents.append(content)
+        contents.append(content[0].extract)
     
-    return contents
+    full_content_result = " ".join(contents)
+    prompt = f"think step-by-step. First extract the most mentioned positive aspects of working at {company_name} from the following text. Then summarize it for a promotion video in a very motivating voice. As an output, only write the voice for the promotion video in 2-3 sentences. here is the text: {full_content_result}"
+    summary = llm.llm_multimodal(None,prompt=prompt)
+    
+    return contents, summary
 
 def show():
     st.markdown("### Research Agend")
@@ -26,9 +31,14 @@ def show():
         st.write("Researching relevant data for  " + company_name)
 
         # Call the function to run Metaphor search and retrieve extracts
-        extracts = run_metaphor_search(company_name)
+        extracts, summary = run_metaphor_search(company_name)
 
         for extract in extracts:
-            st.write(extract)
+            with st.expander("Extracted content"):
+                st.write(extract)
+
+        st.markdown("### Summary:")
+        st.write(summary)
+
         
       
