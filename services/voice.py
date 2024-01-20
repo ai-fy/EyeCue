@@ -30,8 +30,8 @@ import streamlit as st
 @st.cache_data
 def generate_audio (text,token):
     
-    if token == "":
-        return ""
+    # if token == "":
+    #     return ""
 
     input = text
     api_key = token
