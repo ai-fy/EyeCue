@@ -14,7 +14,7 @@ from services import llm
 from dotenv import load_dotenv
 import datetime
 import yaml
-import pages.research_agend as research_agend
+import services.research_agend as research_agend
 import random
 
 
@@ -51,6 +51,7 @@ RAW_TEXT = 'What do you see on this picture?'
 
 PAT = os.environ['PAT']
 ELEVENLABS_TOKEN = os.environ['ELEVENLABS_TOKEN']
+SERP_TOKEN = os.environ['SERP_API']
 
 os.environ['CLARIFAI_PAT'] = PAT
 
@@ -165,84 +166,90 @@ with st.sidebar:
 
   st.markdown(f"## Generated Stories ("+str(st.session_state.stories.getStoryAmount())+")")
   session_stories = st.session_state["stories"]
-  for element in session_stories.getStories(): #<._stories["_stories"]:
-    story = element["story"]
-    scenes = story.getScenes()
-    #print(scenes)
-    with st.expander(story.getRoleText()):
 
-      if story.hasVideo() != True:
-        if st.button("video", key="video"+str(element["id"])):
-          vid = video.Video()
-          vid.create_video(story)
-          st.write("video created")
-          session_stories.save()
-      
 
-      if st.button("edit", key="edit"+str(element["id"]),on_click=show_all_scenes, args=[story]): #, key="edit "+str(element["id"])):
-        st.write("editing")
-        #set current story to session state to edit
-        st.session_state["current_story"] = story
+  on = st.toggle('Show Archive')
 
-      if story.hasVideo():
-        st.markdown("### Video")
-        st.video(f"{story.getVideo()}")
+  if on:
+    
+    for element in session_stories.getStories(): #<._stories["_stories"]:
+      story = element["story"]
+      scenes = story.getScenes()
+      #print(scenes)
+      with st.expander(story.getRoleText()):
+
+        if story.hasVideo() != True:
+          if st.button("video", key="video"+str(element["id"])):
+            vid = video.Video()
+            vid.create_video(story)
+            st.write("video created")
+            session_stories.save()
         
-      # iterate all scenes in story
-      for scene in story.getScenes():
-        st.write(f"## Scene {scene.get('number','')}")
-        st.markdown(f"{scene['text']}")
+
+        if st.button("edit", key="edit"+str(element["id"]),on_click=show_all_scenes, args=[story]): #, key="edit "+str(element["id"])):
+          st.write("editing")
+          #set current story to session state to edit
+          st.session_state["current_story"] = story
+
+        if story.hasVideo():
+          st.markdown("### Video")
+          st.video(f"{story.getVideo()}")
+          
+        # iterate all scenes in story
+        for scene in story.getScenes():
+          st.write(f"## Scene {scene.get('number','')}")
+          st.markdown(f"{scene['text']}")
+          
+          #st.write("### Visual")
+          #st.markdown(f"{scene['visualprompt']}")
+          st.image(scene["image"])
+
+          #st.markdown("### Voice")  
+          #st.markdown(f"{scene['voiceover']}")
+          if eleven_token != "":
+            st.audio(scene["audio"])
+          else:
+            st.write("no token, no audio")
+
+        # for audio_path in story.getAudioPaths():
+        #   if audio_path != "":
+        #     st.audio(audio_path) 
+        #   else:
+        #     st.write("no audio")
         
-        #st.write("### Visual")
-        #st.markdown(f"{scene['visualprompt']}")
-        st.image(scene["image"])
+        # #display generated images
+        # for image_path in story.getImagePaths():
+        #   st.image(image_path)
 
-        #st.markdown("### Voice")  
-        #st.markdown(f"{scene['voiceover']}")
-        if eleven_token != "":
-          st.audio(scene["audio"])
-        else:
-          st.write("no token, no audio")
+  #------------------- The Repository in sidebar ------------------- #
+    st.markdown("# MEDIA REPOSITORY")
+    with st.expander("## Generated audio files"):
+      counter = 0
+      for fi, f in enumerate(glob.glob(os.path.join(d, "audio", "*.wav"))):
+        name = os.path.splitext(os.path.basename(f))[0]
+        counter = counter + 1
 
-      # for audio_path in story.getAudioPaths():
-      #   if audio_path != "":
-      #     st.audio(audio_path) 
-      #   else:
-      #     st.write("no audio")
-      
-      # #display generated images
-      # for image_path in story.getImagePaths():
-      #   st.image(image_path)
+        c1, c2 = st.columns([0.7,0.3])
+        with c1:  
+          st.audio(f, format='audio/wav', start_time=0)
+        with c2:
+          if st.button("delete", key="delete "+str(counter)):
+            os.remove(f)
+            st.write("deleted")
 
-#------------------- The Repository in sidebar ------------------- #
-  st.markdown("# MEDIA REPOSITORY")
-  with st.expander("## Generated audio files"):
-    counter = 0
-    for fi, f in enumerate(glob.glob(os.path.join(d, "audio", "*.wav"))):
-      name = os.path.splitext(os.path.basename(f))[0]
-      counter = counter + 1
-
-      c1, c2 = st.columns([0.7,0.3])
-      with c1:  
-        st.audio(f, format='audio/wav', start_time=0)
-      with c2:
-        if st.button("delete", key="delete "+str(counter)):
+    # ------------------ Images in sidebar ------------------------ #
+    #load all files in folder ./images and display them as images
+    with st.expander("## Generated images"):
+      counter = 0
+      for fi, f in enumerate(glob.glob(os.path.join(d, "images", "*.png"))):
+        name = os.path.splitext(os.path.basename(f))[0]
+        counter = counter + 1
+        #display image
+        st.image("./images/"+name+".png")
+        #display delete button
+        if st.button("delete", key="delete image "+str(counter)):
           os.remove(f)
           st.write("deleted")
-
-  # ------------------ Images in sidebar ------------------------ #
-  #load all files in folder ./images and display them as images
-  with st.expander("## Generated images"):
-    counter = 0
-    for fi, f in enumerate(glob.glob(os.path.join(d, "images", "*.png"))):
-      name = os.path.splitext(os.path.basename(f))[0]
-      counter = counter + 1
-      #display image
-      st.image("./images/"+name+".png")
-      #display delete button
-      if st.button("delete", key="delete image "+str(counter)):
-        os.remove(f)
-        st.write("deleted")
 
 # ------------------ Story generation in main page  ------------------------ #
 
@@ -252,8 +259,14 @@ with research:
 
 with home:
 
+  search_query = st.text_input("Search Query", "Data Scientist")
+  if st.button("Search Jobs"):
+    research_agend.search_jobs(SERP_TOKEN,search_query)
+    st.write("searching jobs for "+search_query)
+    
 
   with st.form(key="story_form"):
+    
     job_role = st.text_input("Job Role",key="job_role")
     company = st.text_input("Company",value="LabLab.ai")
     max_number_of_scenes = st.number_input("Max number of scenes", min_value=1, max_value=10, value=3)
