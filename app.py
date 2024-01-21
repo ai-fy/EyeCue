@@ -18,6 +18,7 @@ import services.research_agend as research_agend
 import random
 
 
+
 load_dotenv()
 
 
@@ -60,19 +61,22 @@ def show_all_scenes(_story):
     print("showing story with "+str(len(_story.getScenes()))+" scenes")
     st.session_state["current_story"] = _story
     container_to_show_in = st.session_state["story_area2"]
+    container_to_show_in = container_to_show_in.empty()
     container_to_show_in = container_to_show_in.container()
     with container_to_show_in:
       
+      st.markdown("## Current Story about "+_story.getRoleText())
 
       column_count = 3
       if _story.hasVideo() == True:
         column_count = column_count + 1
-      else:
-         if st.button("video", key="video_in_editor"+str(random.randint(0,1000))):
-          vid = video.Video()
-          vid.create_video(_story)
-          st.write("video created")
-          session_stories.save()
+      # else:
+      #    if st.button("video", key="video_in_editor"+str(_story.getRoleText())+"_"+str(container_to_show_in)):
+      #       vid = video.Video()
+      #       vid.create_video(_story)
+      #       st.write("video created")
+      #       session_stories.save()
+      #       st.experimental_rerun()
 
       columns = st.columns(column_count)
       scene_counter = 0
@@ -116,24 +120,6 @@ def show_all_scenes(_story):
         
 
         
-       
-def show_story_on_mainpage(current_story):
-    return
-    # area = st.session_state["story_area"]
-    # with area.container():
-    
-    #   st.markdown(f"## Current Story: {current_story._role}")
-    # #display generated images
-    #   for image_path in current_story.getImagePaths():
-    #     st.image(image_path)
-
-    # #display generated audio
-    #   for audio_path in current_story.getAudioPaths():
-    #     if audio_path != "":
-    #       st.audio(audio_path) 
-    #     else:
-    #       st.write("no audio")
-
 
 st.set_page_config(layout="wide")
 st.title("EyeCue")
@@ -259,10 +245,10 @@ with research:
 
 with home:
 
-  search_query = st.text_input("Search Query", "Data Scientist")
-  if st.button("Search Jobs"):
-    research_agend.search_jobs(SERP_TOKEN,search_query)
-    st.write("searching jobs for "+search_query)
+  # search_query = st.text_input("Search Query", "Data Scientist")
+  # if st.button("Search Jobs"):
+  #   research_agend.search_jobs(SERP_TOKEN,search_query)
+  #   st.write("searching jobs for "+search_query)
     
 
   with st.form(key="story_form"):
@@ -273,45 +259,54 @@ with home:
 
     
     if st.form_submit_button("Generate Storyboard"):
-      storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Describe each of {max_number_of_scenes} scene. For each scene find very attention catching hooks and generate the following, - desciption: Describe the scene shortly with a great hook - visualprompt: Generate a prompt for the scene for an image generator, describing very positive energetic persons, clothes, light, perspective in this prompt. Do not include Text or logos. Prefer showing happy people. Generate a portrait orientation in 9:16 format - voiceover: the very short and compelling one sentence text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data, that contains a scenes array with the scenes at the top level.")
-      print(storyboard)
+
+      with st.status(f"first i will do some research about what people like at {company}") as status:
+        contents, summary = research_agend.run_metaphor_search(company)
+        st.write(summary)
+
+        storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Describe each of {max_number_of_scenes} scene. For each scene find very attention catching hooks and generate the following, - desciption: Describe the scene shortly with a great hook - visualprompt: Generate a prompt for the scene for an image generator, describing very positive energetic persons, clothes, light, perspective in this prompt. Do not include Text or logos. Prefer showing happy people. Generate a portrait orientation in 9:16 format - voiceover: the very short and compelling one sentence text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data, that contains a scenes array with the scenes at the top level.")
+        status.update(label="now we created a storyboard for you and will start to generate the scenes.")
+        print(storyboard)
+        
+        storyboard = storyboard.replace("```json","")
+        storyboard = storyboard.replace("```","")
+        storyboard = storyboard.replace("json","") #remove javascript object notation from string, if LLM is not compliant
+        
+        #st.write(storyboard)
+        #st.write(str(type(storyboard)))
+        #------------------- The current story in main page ------------------- #
+
       
-      storyboard = storyboard.replace("```json","")
-      storyboard = storyboard.replace("```","")
-      storyboard = storyboard.replace("json","") #remove javascript object notation from string, if LLM is not compliant
-      
-      #st.write(storyboard)
-      #st.write(str(type(storyboard)))
-      #------------------- The current story in main page ------------------- #
 
-    
+        try:
+          parsed_storyboard = json.loads(storyboard)
+          story = Story.story(job_role)
+          story.addStory(storyboard)
+          scenes = parsed_storyboard["scenes"]
+          scene_counter = 0
+          for scene in scenes:
+            scene_counter = scene_counter + 1
+            image_filepath, prompt, width, height = llm.generate_image(scene["visualprompt"])
+            status.update(label="generated an image for the scene")
+            if eleven_token != "":
+              audio_filepath = voice.generate_audio(scene["voiceover"],eleven_token)
+              status.update(label="generated audio for the scene")
+            else:
+              audio_filepath = ""
 
-      try:
-        parsed_storyboard = json.loads(storyboard)
-        story = Story.story(job_role)
-        story.addStory(storyboard)
-        scenes = parsed_storyboard["scenes"]
-        scene_counter = 0
-        for scene in scenes:
-          scene_counter = scene_counter + 1
-          image_filepath, prompt, width, height = llm.generate_image(scene["visualprompt"])
-          if eleven_token != "":
-            audio_filepath = voice.generate_audio(scene["voiceover"],eleven_token)
-          else:
-            audio_filepath = ""
+            story.addScene(scene["description"],scene['visualprompt'],image_filepath,scene["voiceover"],audio_filepath,scene_counter)
+            status.update(label="added another scene to story")
+            show_all_scenes(story)
+        except Exception as e:
+          st.write("not parsed storyboard")
+          st.write(e)
 
-          story.addScene(scene["description"],scene['visualprompt'],image_filepath,scene["voiceover"],audio_filepath,scene_counter)
-          show_all_scenes(story)
-      except Exception as e:
-        st.write("not parsed storyboard")
-        st.write(e)
-
-      stories = st.session_state["stories"]
-      stories.addStory(story)
-      stories.save()
-      st.session_state["stories"] = stories
-      st.session_state["current_story"] = story
-      #show_all_scenes(story)
+        stories = st.session_state["stories"]
+        stories.addStory(story)
+        stories.save()
+        st.session_state["stories"] = stories
+        st.session_state["current_story"] = story
+        #show_all_scenes(story)
 
   # if job_role and st.button("Generate Story"):
   #     prompt = f"Make a 3 sentence emotional elevator pitch to a candidate in the style of Sir Attenborough, that the {job_role} is great and you are going to present some good jobs. Do not mention your name. Also make a prompt to generate a very appealing photography of an impressive person doing this job and name the role. Output both as a JSON with attributes story and impage_prompt."
@@ -354,15 +349,41 @@ with home:
   #     st.markdown(text)
 
   print("calling st.empty")
+
+  if "current_story" in st.session_state:
+    _story = st.session_state["current_story"]
+    if _story.hasVideo() != True:
+      if st.button("Generate Video", key="video_in_mainpage_top"+str(_story.getRoleText())):
+        vid = video.Video()
+        vid.create_video(_story)
+        st.write("video created")
+        session_stories.save()
+        st.experimental_rerun()
+
   placeholder = st.empty()
   with placeholder.container():
-    st.markdown("## Current Story")
+    st.markdown("## Select Current Story in Archive or Generate a new Story")
 
   st.session_state["story_area2"] = placeholder
 
   if "current_story" in st.session_state:
   
     print("showing story from session.")
+    # _story = st.session_state["current_story"]
+    # if _story.hasVideo() == True:
+    #   if st.button("show Video", key="video_in_modal"+str(_story.getRoleText())):
+    #     with st.Modal():
+    #       st.header("Video for "+_story.getRoleText())
+    #       st.video(f"{_story.getVideo()}")    
+    #       st.button("Close Modal")
+      
+    # else:
+    #      if st.button("video", key="video_in_editor"+str(_story.getRoleText())):
+    #         vid = video.Video()
+    #         vid.create_video(_story)
+    #         st.write("video created")
+    #         session_stories.save()
+    #         #st.experimental_rerun()
     show_all_scenes(st.session_state["current_story"])
 
 ClarifaiStreamlitCSS.insert_default_css(st)

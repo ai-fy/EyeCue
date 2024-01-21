@@ -17,7 +17,7 @@ class Video:
         #cycle through scenes and create video with moviepy
         # Generate a text clip. You can customize the font, color, etc.
         #txt_clip = TextClip("Amazing JOBs",fontsize=70,color='white')
-
+        print("creating video")
         scene_clips = []
         for scene in story.getScenes():
             #create image clip
