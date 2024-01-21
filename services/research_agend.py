@@ -27,7 +27,20 @@ def run_metaphor_search(company_name):
     return contents, summary
 
 def show():
-    st.markdown("### Research Agend")
+    st.markdown("### Rate images with vision for selection in video")
+      # # ------------------ Testing Image Curation ------------------------ #
+    uploaded_file = st.file_uploader("Choose a file to let it be rated by the AI for selection in the video")
+    if uploaded_file is not None:
+        # To read file as bytes:
+        file_bytes = uploaded_file.getvalue()
+        #st.write(file_bytes)
+        prompt = "Is there at least one clear face of person on this image? Is it a photography? How positive on a scale from 1-10 will this image be perceived? On a scale from 1-10, would your recommend to use it in an image video for recruiting? Use JSON as an output format with attributes is_person, positivity_rating, is_photography"
+        text = llm.llm_multimodal(file_bytes, prompt)
+        st.markdown(text)
+
+    st.divider()
+
+    st.markdown("### Research company reviews with Metaphor API")
     company_name = st.text_input("Company Name", "LabLab.ai")
 
     if st.button("Start research"):
@@ -43,6 +56,8 @@ def show():
 
         st.markdown("### Summary:")
         st.write(summary)
+
+        
 
         
       

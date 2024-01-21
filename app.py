@@ -138,8 +138,8 @@ def show_all_scenes(_story):
         
 
 st.set_page_config(layout="wide")
-st.title("EyeCue")
-st.markdown("## the smart video creator for Career inspiration")
+st.title("EyeCue - GenAI for recruiting videos")
+#st.markdown("## the smart video creator for Career inspiration")
 home,research = st.tabs(["Generate Story", "Research Agend"])
 eleven_token = ""
 stories = Story.stories()
@@ -356,15 +356,6 @@ with home:
 
 
 
-  # # ------------------ Testing Image Curation ------------------------ #
-  # uploaded_file = st.file_uploader("Choose a file")
-  # if uploaded_file is not None:
-  #     # To read file as bytes:
-  #     file_bytes = uploaded_file.getvalue()
-  #     #st.write(file_bytes)
-  #     prompt = "Is there at least one clear face of person on this image? Is it a photography? How positive on a scale from 1-10 will this image be perceived? Use JSON as an output format with attributes is_person, positivity_rating, is_photography"
-  #     text = llm.llm_multimodal(file_bytes, prompt)
-  #     st.markdown(text)
 
   print("calling st.empty")
 
@@ -381,7 +372,7 @@ with home:
 
   placeholder = st.empty()
   with placeholder.container():
-    st.markdown("## Select Current Story in Archive or Generate a new Story")
+    st.info("### Select a Story in the Archive left or generate a new Story above")
 
   st.session_state["story_area2"] = placeholder
 
