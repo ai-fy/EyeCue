@@ -208,7 +208,7 @@ with st.sidebar:
 
           #st.markdown("### Voice")  
           #st.markdown(f"{scene['voiceover']}")
-          if eleven_token != "":
+          if scene["audio"] != "":
             st.audio(scene["audio"])
           else:
             st.write("no token, no audio")
@@ -305,7 +305,7 @@ with home:
             scene_counter = scene_counter + 1
             image_filepath, prompt, width, height = llm.generate_image(scene["visualprompt"])
             status.update(label="generated an image for the scene")
-            if eleven_token != "":
+            if True or eleven_token != "": #we ssitch to openAI voice, so always generate for now
               audio_filepath = voice.generate_audio(scene["voiceover"],eleven_token)
               status.update(label="generated audio for the scene")
             else:
