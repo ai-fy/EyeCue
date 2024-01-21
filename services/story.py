@@ -1,7 +1,8 @@
 import json
 import os
 import jsonpickle
-
+from services import llm
+from services import voice 
 
 #collection of stories, can be stored to filesystem and loaded 
 
@@ -96,6 +97,12 @@ class story:
     def addStory(self, text):
         self._generated["story"]= text
 
+    def addEmployeeFeedback(self, text):
+        self._generated["employee_feedback"] = text
+
+    def getEmployeeFeedback(self):
+        return self._generated["employee_feedback"]        
+
     #add image prompt
     def addImagePrompt(self, text):
         self._generated["image_prompt"] = text    
@@ -150,59 +157,34 @@ class story:
     def getScenes(self):
         return self._scenes
     
-    
-    def toVideo(self):
+    def is_generated(self):
+        return self._generated["is_generated"]
 
-        text = "CFO at LabLab, the place to be for AI"
-        text2= "LabLab.ai"
-        video_template = """
-{
-  "id": "q6kbimx5",
-  "type": "component",
-  "component": "basic/000",
-  "settings": {
-    "headline": {
-      "text": [
-        "{text}}"
-      ],
-      "color": "white",
-      "font-family": "EB Garamond",
-      "text-align": "center",
-      "font-size": "8vw",
-      "padding": "3vw 0"
-    },
-    "body": {
-      "color": "white",
-      "text": [
-        "{text2}"
-      ],
-      "text-align": "center",
-      "font-family": "EB Garamond",
-      "font-size": "5vw"
-    },
-    "card": {
-      "vertical-align": "bottom",
-      "margin": "5vw",
-      "background-color": "rgba(0,100,150,0.5)",
-      "border-radius": "2vw"
-    }
-  },
-  "width": 1080,
-  "height": 1800,
-  "x": 0,
-  "y": 0,
-  "duration": 10,
-  "comment": "Simple card",
-  "position": "custom"
-}
-        """
-        return ""
+    def generateSceneAssets(self, eleven_token,status):
+        scene_counter = 0
+        for scene in self._scenes:
+            scene_counter = scene_counter + 1
+            status.update(f"generating image for scene {scene_counter} of {len(self._scenes)}")
+            image_filepath, prompt, width, height = llm.generate_image(scene["visualprompt"])
+            scene["image"] = image_filepath  
+          
+            if eleven_token != "":
+              status.update(f"generating audio for scene {scene_counter} of {len(self._scenes)}")
+              audio_filepath = voice.generate_audio(scene["voiceover"],eleven_token)   
+            else:
+              audio_filepath = ""
+            scene["audio"] = audio_filepath
+        self._generated["is_generated"] = True
+        return
+
+   
 
     def __init__(self):
         return
     
     def __init__(self,role_txt):
         self._generated = {
+            "is_generated": False,
             "story": "",
             "image_prompt": "",
             "images": [],

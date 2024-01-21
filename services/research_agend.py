@@ -21,7 +21,7 @@ def run_metaphor_search(company_name):
         contents.append(content[0].extract)
     
     full_content_result = " ".join(contents)
-    prompt = f"think step-by-step. First extract the most mentioned positive aspects of working at {company_name} from the following text. Then summarize the facts for a promotion video. As an output, only write the summary in 3-5 sentences. here is the text: {full_content_result}"
+    prompt = f"think step-by-step. First extract the most mentioned positive aspects of working at {company_name} from the following text. Then summarize just the facts. As an output, only write the fact summary in 3-5 sentences without mentioning names. here is the text: {full_content_result}"
     summary = llm.llm_multimodal(None,prompt=prompt)
     
     return contents, summary

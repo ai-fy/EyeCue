@@ -66,6 +66,7 @@ def show_all_scenes(_story):
     with container_to_show_in:
       
       st.markdown("## Current Story about "+_story.getRoleText())
+      st.markdown("*What Employees like:* "+_story.getEmployeeFeedback())
 
       column_count = 3
       if _story.hasVideo() == True:
@@ -257,14 +258,14 @@ with home:
     company = st.text_input("Company",value="LabLab.ai")
     max_number_of_scenes = st.number_input("Max number of scenes", min_value=1, max_value=10, value=3)
 
-    
+    employee_feedback = ""    
     if st.form_submit_button("Generate Storyboard"):
 
       with st.status(f"first i will do some research about what people like at {company}") as status:
         contents, summary = research_agend.run_metaphor_search(company)
         st.write(summary)
-
-        storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Describe each of {max_number_of_scenes} scene. For each scene find very attention catching hooks and generate the following, - desciption: Describe the scene shortly with a great hook - visualprompt: Generate a prompt for the scene for an image generator, describing very positive energetic persons, clothes, light, perspective in this prompt. Do not include Text or logos. Prefer showing happy people. Generate a portrait orientation in 9:16 format - voiceover: the very short and compelling one sentence text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data, that contains a scenes array with the scenes at the top level.")
+        status.update(label="now i will extract the essence of the research")
+        storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Here are some things that employees like about the company, uses this in your storyline: '{summary}'. Now, Describe each of {max_number_of_scenes} scene. For each scene find very attention catching hooks and generate the following, - desciption: Describe the scene shortly with a great hook - visualprompt: Generate a prompt for the scene for an image generator, describing very positive energetic persons, clothes, light, perspective in this prompt. Do not include Text or logos. Prefer showing happy people. Generate a portrait orientation in 9:16 format - voiceover: the very short and compelling one sentence text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Write from an external perspective of someone outside the company who knows a lot about it. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data, that contains a scenes array with the scenes at the top level.")
         status.update(label="now we created a storyboard for you and will start to generate the scenes.")
         print(storyboard)
         
@@ -281,6 +282,7 @@ with home:
         try:
           parsed_storyboard = json.loads(storyboard)
           story = Story.story(job_role)
+          story.addEmployeeFeedback(summary)
           story.addStory(storyboard)
           scenes = parsed_storyboard["scenes"]
           scene_counter = 0
@@ -306,6 +308,7 @@ with home:
         stories.save()
         st.session_state["stories"] = stories
         st.session_state["current_story"] = story
+        st.balloons()
         #show_all_scenes(story)
 
   # if job_role and st.button("Generate Story"):
@@ -358,7 +361,8 @@ with home:
         vid.create_video(_story)
         st.write("video created")
         session_stories.save()
-        st.experimental_rerun()
+        st.balloons()
+        #st.experimental_rerun()
 
   placeholder = st.empty()
   with placeholder.container():
