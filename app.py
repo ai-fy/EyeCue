@@ -79,20 +79,35 @@ def show_all_scenes(_story):
       #       session_stories.save()
       #       st.experimental_rerun()
 
-      columns = st.columns(column_count)
+      row_count = int(len(_story.getScenes()) / column_count) + 1
+      print("rows: "+str(row_count))
+      rows = st.columns(row_count)
+      row_colums = []
+
+      for row in rows:
+        #with row:
+          columns = st.columns(column_count)
+          row_colums.append(columns)
+
+      #columns = st.columns(column_count)
       scene_counter = 0
       col_counter = 0
       scenes = _story.getScenes()
       
       if _story.hasVideo() == True:
-        with columns[col_counter]:
+        with row_colums[0][col_counter]:
           st.write("## Generated Video")
           vid = _story.getVideo()
           st.video(vid)
           col_counter = col_counter + 1
       
       for scene in scenes:
-        with columns[col_counter % len(columns)]:
+        #with columns[col_counter % len(columns)]:
+        row_to_use = col_counter // column_count
+        col_to_use = col_counter % column_count
+
+        with row_colums[row_to_use][col_to_use]:  
+          print(f"using row {row_to_use} and col {col_to_use}")
           scene_counter = scene_counter + 1
           col_counter = col_counter + 1
           
