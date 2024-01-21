@@ -10,6 +10,9 @@ def run_metaphor_search(company_name):
     response = metaphor.search(prompt, num_results=3, include_domains=["glassdoor.com"], type="keyword")
     st.write(f"received {len(response.results)} entries")
 
+    # with st.expander("Metaphor API response complete"):
+    #     st.components.v1.html(response.text, height=500)
+
     contents = []
     for result in response.results:
         st.write(f"now checking for: {result.title} at {result.url}")
@@ -35,7 +38,8 @@ def show():
 
         for extract in extracts:
             with st.expander("Extracted content"):
-                st.write(extract)
+                #st.write(extract)
+                st.components.v1.html(extract, height=500)   
 
         st.markdown("### Summary:")
         st.write(summary)
