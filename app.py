@@ -53,7 +53,7 @@ RAW_TEXT = 'What do you see on this picture?'
 PAT = os.environ['PAT']
 ELEVENLABS_TOKEN = os.environ['ELEVENLABS_TOKEN']
 SERP_TOKEN = os.environ['SERP_API']
-
+metaphor_token = os.environ['METAPHOR_TOKEN']
 os.environ['CLARIFAI_PAT'] = PAT
 
 
@@ -257,7 +257,7 @@ with st.sidebar:
 
 
 with research:
-   research_agend.show()
+   research_agend.show(metaphor_token)
 
 with home:
 
@@ -277,7 +277,7 @@ with home:
     if st.form_submit_button("Generate Storyboard"):
 
       with st.status(f"first i will do some research about what people like at {company}") as status:
-        contents, summary = research_agend.run_metaphor_search(company)
+        contents, summary = research_agend.run_metaphor_search(company,metaphor_token)
         st.write(summary)
         status.update(label="now i will extract the essence of the research")
         storyboard = llm.llm_multimodal(None,f"Generate a 40 seconds video storyboard for the job role {job_role} at the company {company}. Here are some things that employees like about the company, uses this in your storyline: '{summary}'. Now, Describe each of {max_number_of_scenes} scene. For each scene find very attention catching hooks and generate the following, - desciption: Describe the scene shortly with a great hook - visualprompt: Generate a prompt for the scene for an image generator, describing very positive energetic persons, clothes, light, perspective in this prompt. Do not include Text or logos. Prefer showing happy people. Generate a portrait orientation in 9:16 format - voiceover: the very short and compelling one sentence text of the speaker in the voice of Sir Attemborough (without mentioning his name). The video should be very positive and inspire to do the next career step. Start with presenting the role and end with present some great jobs. Do not mention your name. Write from an external perspective of someone outside the company who knows a lot about it. Output a clean utf-8 JSON as text without JavaScript Object Notation formatted data, that contains a scenes array with the scenes at the top level.")

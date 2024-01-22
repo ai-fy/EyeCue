@@ -2,11 +2,12 @@ import streamlit as st
 from metaphor_python import Metaphor
 from services import llm
 
-# Initialize the Metaphor API client at the global level
-metaphor = Metaphor("f4ca1ab6-2d62-475c-850f-9bbcdb7d281c")
 
-def run_metaphor_search(company_name):
+
+def run_metaphor_search(company_name,metaphor_token):
     prompt = f"positive reviews about employees working at {company_name}"
+    # Initialize the Metaphor API client at the global level
+    metaphor = Metaphor(metaphor_token)
     response = metaphor.search(prompt, num_results=3, include_domains=["glassdoor.com"], type="keyword")
     st.write(f"received {len(response.results)} entries")
 
@@ -26,7 +27,7 @@ def run_metaphor_search(company_name):
     
     return contents, summary
 
-def show():
+def show(metaphor_token):
     st.markdown("### Rate images with vision for selection in video")
       # # ------------------ Testing Image Curation ------------------------ #
     uploaded_file = st.file_uploader("Choose a file to let it be rated by the AI for selection in the video")
@@ -47,7 +48,7 @@ def show():
         st.write("Researching relevant data for  " + company_name)
 
         # Call the function to run Metaphor search and retrieve extracts
-        extracts, summary = run_metaphor_search(company_name)
+        extracts, summary = run_metaphor_search(company_name,metaphor_token)
 
         for extract in extracts:
             with st.expander("Extracted content"):
